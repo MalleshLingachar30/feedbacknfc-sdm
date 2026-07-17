@@ -1,0 +1,29 @@
+{
+  "name": "@feedbacknfc/sdm",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "prepare": "npm run build",
+    "test": "tsx --test src/*.test.ts",
+    "check": "npm run build && npm run test"
+  },
+  "devDependencies": {
+    "@types/node": "20.19.11",
+    "tsx": "4.20.5",
+    "typescript": "5.9.2"
+  }
+}
