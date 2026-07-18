@@ -9,5 +9,10 @@ export {
   encodeCounter,
   encryptPiccData,
 } from './picc.js'
-export { verifySdm } from './verify.js'
-export type { TapRejection, VerifyFailure, VerifySuccess } from './verify.js'
+export { verifySdm, verifySdmCounter } from './verify.js'
+export type {
+  CounterVerification,
+  TapRejection,
+  VerifyFailure,
+  VerifySuccess,
+} from './verify.js'

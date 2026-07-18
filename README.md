@@ -7,11 +7,19 @@ This package owns:
 - AES-CMAC verification
 - tag-key derivation from versioned master keys
 - encrypted PICC data parsing
+- counter freshness checks for replay protection
 - development tap fixtures
 
 Apps must consume this package instead of carrying local SDM verifier copies.
 That keeps key rotation and replay-sensitive verification logic in one audit
 surface.
+
+## Replay protection
+
+Use `verifySdmCounter` after loading the sticker's persisted last-seen counter.
+It rejects any tap whose counter is less than or equal to the stored value.
+Keep the consuming app's database update atomic; this package defines the shared
+counter rule, and the database write remains the race-safety guard.
 
 ## Environment
 
@@ -25,4 +33,3 @@ SDM_MASTER_KEY_V3=
 
 Non-production runtime falls back to deterministic development fixture keys for
 tests and local tap simulation. Production does not.
-

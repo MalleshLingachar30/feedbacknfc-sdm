@@ -8,6 +8,7 @@ export type TapRejection =
   | "invalid_cmac"
   | "invalid_picc_format"
   | "missing_params"
+  | "replayed_counter"
   | "crypto_error";
 
 export type VerifySuccess = {
@@ -22,6 +23,19 @@ export type VerifyFailure = {
   reason: TapRejection;
 };
 
+export type CounterVerification =
+  | {
+      ok: true;
+      counter: number;
+      lastSeenCounter: number;
+    }
+  | {
+      ok: false;
+      reason: "replayed_counter";
+      counter: number;
+      lastSeenCounter: number;
+    };
+
 function constantTimeEqual(a: Buffer, b: Buffer) {
   if (a.length !== b.length) {
     return false;
@@ -30,10 +44,31 @@ function constantTimeEqual(a: Buffer, b: Buffer) {
   return crypto.timingSafeEqual(a, b);
 }
 
+export function verifySdmCounter(params: {
+  counter: number;
+  lastSeenCounter: number;
+}): CounterVerification {
+  if (params.counter <= params.lastSeenCounter) {
+    return {
+      ok: false,
+      reason: "replayed_counter",
+      counter: params.counter,
+      lastSeenCounter: params.lastSeenCounter
+    };
+  }
+
+  return {
+    ok: true,
+    counter: params.counter,
+    lastSeenCounter: params.lastSeenCounter
+  };
+}
+
 export async function verifySdm(params: {
   piccData?: string | null;
   cmac?: string | null;
   keyVersion?: number;
+  lastSeenCounter?: number | null;
 }): Promise<VerifySuccess | VerifyFailure> {
   if (!params.piccData || !params.cmac) {
     return { ok: false, reason: "missing_params" };
@@ -60,6 +95,17 @@ export async function verifySdm(params: {
 
     if (!constantTimeEqual(expectedFullCmac.subarray(0, 8), provided.subarray(0, 8))) {
       return { ok: false, reason: "invalid_cmac" };
+    }
+
+    if (params.lastSeenCounter != null) {
+      const counterCheck = verifySdmCounter({
+        counter: decrypted.counter,
+        lastSeenCounter: params.lastSeenCounter
+      });
+
+      if (!counterCheck.ok) {
+        return { ok: false, reason: counterCheck.reason };
+      }
     }
 
     return {
