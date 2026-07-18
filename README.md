@@ -14,6 +14,12 @@ Apps must consume this package instead of carrying local SDM verifier copies.
 That keeps key rotation and replay-sensitive verification logic in one audit
 surface.
 
+## Consumer upgrades
+
+Current consumers pin this package to an exact git commit. Before the PlantSure
+pilot, switch to signed version tags such as `v0.1.0` or add Dependabot rules in
+each consumer repo so SDM security fixes produce an explicit upgrade signal.
+
 ## Replay protection
 
 Use `verifySdmCounter` after loading the sticker's persisted last-seen counter.
